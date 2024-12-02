@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $pass = $_POST['pass'];
 
     // Подключение к базе данных
-    $db = new PDO('pgsql:host=postgres;dbname=weba2', 'postgres');
+    $db = new PDO('pgsql:host=postgres;dbname=postgres', 'postgres');
 
     // Проверка логина и пароля
     $stmt = $db->prepare("SELECT * FROM users WHERE login = :login AND pass = :pass");
