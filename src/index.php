@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Подключение к базе данных
-$db = new PDO('pgsql:host=postgres;dbname=postgres', 'postgres');
+$db = new PDO('pgsql:host=postgres;dbname=mydatabase;port=5433', 'myuser', 'mypassword');
 
 // Получение ролей пользователя
 $stmt = $db->prepare("SELECT roles.code FROM roles JOIN user_roles ON roles.id = user_roles.role_id WHERE user_roles.user_id = :user_id");
