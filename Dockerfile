@@ -1,15 +1,20 @@
-FROM php:7.4-fpm
+ARG XDEBUG_VERSION="xdebug-2.9.0"
+
+FROM php:8.2-apache
+
+RUN a2enmod rewrite
 
 RUN apt-get update && apt-get install -y \
     libpq-dev \
-    && docker-php-ext-install pdo_pgsql
+    && docker-php-ext-install pdo pdo_pgsql pgsql
 
-# Установка Composer (опционально)
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN pecl install xdebug && docker-php-ext-enable xdebug
 
-# Установка Xdebug
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug
+RUN yes | pecl install ${XDEBUG_VERSION} \
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
 
-# Установка рабочей директории
+COPY php.ini /usr/local/etc/php/
+
 WORKDIR /var/www/html
