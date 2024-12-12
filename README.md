@@ -5,7 +5,7 @@
 3. Перейти в папку с репозиторием
 4. Выполнить команду для запуска контейнеров: docker-compose up -d
 5. Проверить статус контейнеров: docker ps
-6. Подключить pgAdmin к Host: localhost, port: 5433
+6. Подключить pgAdmin к Host: localhost, port: 5432
 7. Писать код PHP внутри папки src
 8. Проверить доступ к https://localhost:80
 
