@@ -1,102 +1,13 @@
-<?php
-#===============================================#
-# File: SignUp.php
-# Function: This page lets a new customer sign up for an account. If they are missing any details or they provide details that aren't in the correct format (Such as an incorrect email, an expired credit card number or a letter in the credit card field, it will notify the user and keep the existing data they entered so they don't need to restart the form each time an error occurs.)
-#===============================================#
-
-# Comment: Gets the previously entered data if they're being redirected back to the sign up page due to an error which the registration process page has picked up.
-if (isset($_GET['ve'])) {
-    $ea = $_GET['ea'];
-    $eb = $_GET['eb'];
-    $ec = $_GET['ec'];
-    $ed = $_GET['ed'];
-    $ee = $_GET['ee'];
-    $efa = $_GET['efa'];
-    $efb = $_GET['efb'];
-
-    $gfn = $_GET['first_name'];
-    $gln = $_GET['last_name'];
-    $gea = $_GET['email'];
-    $gap = $_GET['password'];
-    $gcn = $_GET['credit_card_num'];
-    $gccem = $_GET['ccem'];
-    $gccey = $_GET['ccey'];
-
-    # Comment: States which errors occurred from the info received from the process page, if a certain field had no error then it won't show that error.
-    if ($ea == "no") {
-        $hea = "Use only alphabetic characters in the first name.";
-        $fnc = "FF0000";
-    } else {
-        $hea = "X";
-        $fnc = "FFFFFF";
-    }
-    if ($eb == "no") {
-        $heb = "Use only alphabetic characters in the last name.";
-        $lnc = "FF0000";
-    } else {
-        $heb = "X";
-        $lnc = "FFFFFF";
-    }
-    if ($ec == "no") {
-        $hec = "The provided e-mail address is not valid.";
-        $eac = "FF0000";
-    } else {
-        $hec = "X";
-        $eac = "FFFFFF";
-    }
-    if ($ed == "no") {
-        $hed = "The password must be at least 6 characters long.";
-        $apc = "FF0000";
-    } else {
-        $hed = "X";
-        $apc = "FFFFFF";
-    }
-    if ($ee == "no") {
-        $hee = "The credit card number must be a 16 digit number.";
-        $cnc = "FF0000";
-    } else {
-        $hee = "X";
-        $cnc = "FFFFFF";
-    }
-    if ($efa == "no") {
-        $hefa = "You must provide a credit card expiry date.";
-        $cec = "FF0000";
-    } else {
-        $hefa = "X";
-        $cec = "FFFFFF";
-    }
-    if ($efa == "yes") {
-        if ($efb == "no") {
-            $hefb = "The provided credit card has expired.";
-            $cec = "FF0000";
-        } else {
-            $hefb = "X";
-            $cec = "FFFFFF";
-        }
-    } else {
-        $hefb = "X";
-    }
-} else {
-    $hea = "X";
-    $heb = "X";
-    $hec = "X";
-    $hed = "X";
-    $hee = "X";
-    $hefa = "X";
-    $hefb = "X";
-}
-?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Регистрация</title>
     <link rel="stylesheet" type="text/css" href="Stylesheet.css">
     <style>
-        /* CSS Styling */
+        /* CSS Стили */
         * {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -114,7 +25,7 @@ if (isset($_GET['ve'])) {
         }
 
         #su_pan {
-            background: #fff;
+            background: white;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -124,7 +35,7 @@ if (isset($_GET['ve'])) {
 
         h1 {
             font-size: 28px;
-            color: #333;
+            color: black;
             margin-bottom: 20px;
             font-weight: bold;
         }
@@ -136,10 +47,32 @@ if (isset($_GET['ve'])) {
             text-align: left;
             margin-bottom: 5px;
         }
+
+        #submit {
+            width: 100%; /* Ширина 100% */
+            padding: 12px; /* Внутренние отступы */
+            background-color: #1e90ff; /* Синий цвет фона */
+            color: white; /* Белый цвет текста */
+            border: none; /* Убираем границу */
+            border-radius: 5px; /* Закругленные углы */
+            font-size: 18px; /* Размер текста */
+            cursor: pointer; /* Курсор в виде руки */
+            transition: background-color 0.3s ease; /* Плавный переход цвета */
+            margin-top: 20px; /* Отступ сверху */
+            text-align: center; /* Выравнивание текста по центру */
+            display: block; /* Отображение как блочный элемент */
+            text-decoration: none; /* Убираем подчеркивание */
+            height: 50px;
+        }
+
+        #submit:hover {
+            background-color: #0056b3; /* Темно-синий цвет при наведении */
+        }
+
         .return {
             width: 100%;
             padding: 12px;
-            background-color: rgba(226, 99, 148, 0.8);
+            background-color: #1e90ff; /* Синий цвет кнопки */
             color: white;
             border: none;
             border-radius: 5px;
@@ -153,13 +86,17 @@ if (isset($_GET['ve'])) {
         }
 
         .return:hover {
-            background-color: rgba(200, 80, 128, 0.8);
-            color: white; /* Убедитесь, что цвет текста остаётся белым */
+            background-color: #0056b3; /* Темно-синий цвет при наведении */
         }
+
         input[type="text"],
         input[type="email"],
         input[type="password"],
+        input[type="credit_card_num"],
+        input[type="first_name"],
+        input[type="last_name"],
         select {
+            background-color: #007BFF; /* Синий цвет кнопки */
             width: 100%;
             padding: 12px;
             margin: 10px 0;
@@ -169,10 +106,25 @@ if (isset($_GET['ve'])) {
             color: #333;
         }
 
+        select:focus {
+            background-color: #0056b3; /* Темно-синий цвет при фокусе */
+            outline: none; /* Убираем стандартный outline */
+        }
+
+        #textbox {
+            background-color: rgb(232, 240, 254); /* Синий цвет */
+            color: black;
+        }
+
+        #input {
+            background-color: rgb(232, 240, 254); /* Синий цвет */
+            color: black;
+        }
+
         input[type="submit"] {
             width: 100%;
             padding: 12px;
-            background-color: #007BFF;
+            background-color: #007BFF; /* Синий цвет кнопки */
             color: white;
             border: none;
             border-radius: 5px;
@@ -182,11 +134,11 @@ if (isset($_GET['ve'])) {
         }
 
         input[type="submit"]:hover {
-            background-color: #0056b3;
+            background-color: #0056b3; /* Темно-синий цвет при наведении */
         }
 
         #emsg {
-            color: #d9534f;
+            color: #d9534f; /* Красный цвет для ошибок */
             font-size: 14px;
             margin-bottom: 15px;
             text-align: left;
@@ -196,13 +148,21 @@ if (isset($_GET['ve'])) {
             display: block;
             text-align: center;
             margin-top: 20px;
-            color: #007BFF;
+            color: #007BFF; /* Синий цвет ссылки */
             text-decoration: none;
             font-size: 16px;
         }
 
         a:hover {
-            color: #0056b3;
+            color: #0056b3; /* Темно-синий цвет при наведении */
+        }
+
+        /* Добавляем flexbox для выравнивания кнопок */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* Расстояние между кнопками */
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -216,7 +176,7 @@ if (isset($_GET['ve'])) {
             if (isset($_GET['ve'])) {
                 echo "<div id='emsg'>";
 
-                # Comment: Displays the errors that occurred when signing up if there were any incorrect fields
+                # Комментарий: Отображает ошибки, возникшие при регистрации, если какие-либо поля были заполнены неправильно.
                 if ($hea != "X") {
                     echo "<li>" . $hea . "</li></br>";
                 }
@@ -267,14 +227,14 @@ if (isset($_GET['ve'])) {
                     <td height="40" valign="middle" align="left"><label for="cce_m"><b>Срок действия карты:</b></label></td>
                     <td align="right">
                         <?php
-                        # Comment: Automatically creates the drop-down menu for the months and years instead of manually entering tons of years in a row.
+                        # Комментарий: Автоматически создает выпадающие меню для месяцев и лет, вместо ручного ввода множества лет.
                         echo "<label><b>Месяц:</b></label> <select name='cce_m' id='input'>";
                         if (isset($_GET['ve'])) {
                             if ($gccem != "X") {
                                 echo "<option value='" . $gccem . "'>" . $gccem . "</option>";
                             }
                         }
-                        echo "<option value='X'>SELECT</option>";
+                        echo "<option value='X'>ВЫБЕРИТЕ</option>";
                         for ($q = 1; $q <= 12; $q++) {
                             echo "<option value='" . $q . "'>" . $q . "</option>";
                         }
@@ -285,7 +245,7 @@ if (isset($_GET['ve'])) {
                                 echo "<option value='" . $gccey . "'>" . $gccey . "</option>";
                             }
                         }
-                        echo "<option value='X'>SELECT</option>";
+                        echo "<option value='X'>ВЫБЕРИТЕ</option>";
                         for ($s = 2014; $s <= 2030; $s++) {
                             echo "<option value='" . $s . "'>" . $s . "</option>";
                         }
@@ -297,13 +257,13 @@ if (isset($_GET['ve'])) {
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
-                <tr align="right">
-                    <td></td>
-                    <td><input id="submit" type="submit" name="submit" value="SIGN UP"></td>
-                </tr>
             </table>
-            <br><br>
-            <a href="Main.php" class="return">НАЗАД</a>
+
+            <!-- Контейнер для кнопок -->
+            <div class="button-container">
+                <input id="submit" type="submit" name="submit" value="ЗАРЕГИСТРИРОВАТЬСЯ">
+                <button type="button" class="return" onclick="window.location.href='Main.php'">НАЗАД</button>
+            </div>
         </form>
     </div>
 </body>

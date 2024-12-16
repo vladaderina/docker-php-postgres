@@ -176,6 +176,32 @@ table td {
     padding: 20px;
   }
 }
+
+/* Стили для кнопки "ВЫЙТИ" */
+.button {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.button-center {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
 </style>
 
 <?PHP
@@ -204,7 +230,7 @@ if($_GET['submit']==9){
     $password_db = getenv('DB_PASSWORD');
 
     $conn = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") or die('Connection failed: ' . pg_last_error());
-    $sql = "SELECT * FROM seats";
+    $sql = "SELECT * FROM seats ORDER BY price, id";
     $result = pg_query($conn, $sql) or die(pg_last_error());
     $amount = pg_num_rows($result);
     
@@ -218,13 +244,14 @@ if($_GET['submit']==9){
         $ssold = $row['order_id'] != 0 ? "sold" : "savail";
         
         echo "<div id='animate_" . $i . "'><div id='inseat'><div id='" . $ssold . "'><div id='midit'>
-              <input id='" . $opa . "' align='middle' type='checkbox' name='" . $row['seat'] . "' value='" . $row['price'] . "' " . $schecked . " " . $sdisabled . "/></div></div></div></div>";
-            
+              <input id='" . $opa . "' align='middle' type='checkbox' name='" . $row['seat'] . "' value='" . $row['price'] . "' " . $schecked . " " . $sdisabled . "/></div></div></div></div>";  
     }
     pg_close($conn);
     ?>
-    </div></div></div>
+    </div>
+    </div>
 
+    <?PHP if($_GET['submit'] != 9): ?>
     <div id="infow">
       <div id="info">
         <br />
@@ -276,6 +303,11 @@ if($_GET['submit']==9){
       ?>
       <input id="submit" type="submit" name="continue" value="ПРОДОЛЖИТЬ">
     </div>
+    <?PHP else: ?>
+    <div class="button-center">
+      <a href="javascript:history.back()" class="button">ВЫЙТИ</a>
+    </div>
+    <?PHP endif; ?>
     </form>
 </div>
 </html>

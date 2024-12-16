@@ -34,7 +34,6 @@ body{background:url(Content/BG.jpg); background-position:center;}
 vertical-align:middle;
 padding: 5px 5px;
 height: 30px; width:250px;
-background-color: rgba(226, 99, 148, 0.8);
 border: 0px solid #979899;
 -moz-border-radius: 2px;
 -webkit-border-radius: 2px;
@@ -47,7 +46,6 @@ font-size: 18px; color:#FFFFFF; font-weight:bold;}
 vertical-align:middle;
 padding: 5px 5px;
 height: 30px; 
-background-color: rgba(226, 99, 148, 0.8);
 border: 0px solid #979899;
 -moz-border-radius: 2px;
 -webkit-border-radius: 2px;
@@ -71,9 +69,6 @@ border-radius: 2px;
 -webkit-background-clip: padding-box;
 background-clip: padding-box;
 font-size: 18px; color:#FFFFFF; font-weight:bold;
-}
-#submit:hover{ 
-background-color: #F69;
 }
 #submit:active{ 
 background-color: #F36;

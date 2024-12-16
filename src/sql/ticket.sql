@@ -22,12 +22,12 @@ CREATE TABLE customers (
 
 -- Вставка данных в таблицу `customers`
 INSERT INTO customers (last_name, first_name, email, password, credit_card_num, credit_card_expiry_date) VALUES
-('Mostafa', 'Abdullah', 'theabdullahem@gmail.com', 'qqqqqq', '9834674398753487', '12/2030'),
-('Bill', 'Gates', 'bill.gates@microsoft.com', 'aaaaaa', '1928364817389475', '09/2029'),
-('Jackie', 'Chan', 'jc@company.com', 'qqqqqq', '36492273909461275', '10/2030'),
-('Elon', 'Musk', 'elon@paypal.com', 'qqqqqq', '8364829506913745', '02/2020'),
-('Bob', 'Bobby', 'bob@gmail.com', '123abc', '1234567890987654', '7/2029'),
-('M', 'Ace', 'iace@gmail.com', '123abc', '1234567890987654', '7/2020');
+('Алексей', 'Иванов', 'theabdullahem@gmail.com', 'qqqqqq', '9834674398753487', '12/2030'),
+('Иван', 'Петров', 'bill.gates@microsoft.com', 'aaaaaa', '1928364817389475', '09/2029'),
+('Екатерина', 'Кузнецова', 'jc@company.com', 'qqqqqq', '36492273909461275', '10/2030'),
+('Татьяна', 'Лебедева', 'elon@paypal.com', 'qqqqqq', '8364829506913745', '02/2020'),
+('Ольга', 'Морозова', 'bob@gmail.com', '123abc', '1234567890987654', '7/2029'),
+('Сергей', 'Волков', 'iace@gmail.com', '123abc', '1234567890987654', '7/2020');
 
 -- Создание таблицы `orders`
 CREATE TABLE orders (
@@ -55,12 +55,12 @@ CREATE TABLE seats (
 );
 
 -- Вставка данных в таблицу `seats`
-INSERT INTO seats (seat, price, order_id) VALUES
+INSERT INTO seats (row, col, price, order_id) VALUES
 ('A1', 20, 0),
 ('A2', 20, 0),
-('A3', 20, 1),
+('A3', 20, 0),
 ('A4', 20, 0),
-('B1', 18, 2),
+('B1', 18, 0),
 ('B2', 18, 0),
 ('B3', 18, 0),
 ('B4', 18, 0),
@@ -68,7 +68,7 @@ INSERT INTO seats (seat, price, order_id) VALUES
 ('C2', 16, 0),
 ('C3', 16, 0),
 ('C4', 16, 0),
-('D1', 14, 1),
+('D1', 14, 0),
 ('D2', 14, 0),
 ('D3', 14, 0),
 ('D4', 14, 0);
