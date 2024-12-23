@@ -118,7 +118,7 @@
 <body>
     <div id="signin">
         <div id="main_pan">
-            <form action="Signin.php" method="post">
+            <form action="Signin.php" method="post" onsubmit="return validateForm()">
                 <h1>ВХОД</h1>
 
                 <?php
@@ -138,13 +138,13 @@
 
                 <!-- Login form -->
                 <label for="email"><b>Почта:</b></label>
-                <input type="email" name="email" required />
+                <input type="email" name="email" id="email" required />
 
                 <label for="password"><b>Пароль:</b></label>
-                <input type="password" name="password" required />
+                <input type="password" name="password" id="password" required />
 
                 <label for="user"><b>Роль:</b></label>
-                <select name="user">
+                <select name="user" id="user">
                     <option value="customers">Пользователь</option>
                     <option value="admin">Администратор</option>
                 </select>
@@ -156,6 +156,43 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function validateForm() {
+            // Получаем значения полей
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const user = document.getElementById('user').value;
+
+            // Проверка на пустые поля
+            if (email.trim() === '' || password.trim() === '') {
+                alert('Заполните все поля');
+                return false;
+            }
+
+            // Проверка формата email
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                alert('Введите корректный email');
+                return false;
+            }
+
+            // Проверка длины пароля
+            if (password.length < 5) {
+                alert('Пароль должен содержать не менее 5 символов');
+                return false;
+            }
+
+            // Проверка выбранной роли
+            if (user !== 'customers' && user !== 'admin') {
+                alert('Выберите корректную роль');
+                return false;
+            }
+
+            // Если все проверки пройдены, форма отправляется
+            return true;
+        }
+    </script>
 </body>
 
 </html>

@@ -1,9 +1,18 @@
 <?php
-#===============================================#
-# File: Admin.php
-# Function: Admin panel lets you reset the database (refund) and has links forwarding you to order, customers or the seating chart pages.
-#===============================================#
+// Предположим, что роль пользователя хранится в сессии
+session_start();
 
+// Роль, необходимая для доступа к Admin.php?submit=9
+$required_role = 'admin';
+// Проверяем, есть ли у пользователя необходимая роль
+if (!in_array($required_role, $_SESSION['user_roles'])) {
+    // Если роли недостаточно, выводим сообщение и список ролей
+    echo "У вас недостаточно привилегий для просмотра данной страницы.<br>";
+    echo "Ваши роли: " . implode(", ", $_SESSION['user_roles']);
+    exit(); // Останавливаем выполнение скрипта, чтобы не отображать панель администратора
+}
+
+// Если роль есть, продолжаем выполнение скрипта
 # Comment: Verifies if the login info matches with the admin account in the database
 if (!isset($_GET['submit'])) {
     header("Location: Main.php");
@@ -12,33 +21,6 @@ if (!isset($_GET['submit'])) {
     if ($_GET['submit'] != 9) {
         header("Location: Main.php");
         exit();
-    }
-    
-    # Comment: Erases the database if it receives the command to refund tickets.
-    if (isset($_GET['erase']) && $_GET['erase'] == 1) {
-
-        $host = getenv('DB_HOST');
-        $dbname = getenv('DB_NAME');
-        $user_db = getenv('DB_USER');
-        $password_db = getenv('DB_PASSWORD');
-    
-        $db = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") or die('Not connected: ' . pg_last_error());
-
-        # Clear the orders table
-        $SQL = "DELETE FROM orders";
-        $result = pg_query($db, $SQL);
-        if (!$result) {
-            die('Error: ' . pg_last_error());
-        }
-
-        # Update the seats table to reset the order_id
-        $SQL = "UPDATE seats SET order_id = 0";
-        $result = pg_query($db, $SQL);
-        if (!$result) {
-            die('Error: ' . pg_last_error());
-        }
-
-        pg_close($db);
     }
 }
 ?>
@@ -142,7 +124,7 @@ if (!isset($_GET['submit'])) {
                 </tr>
                 <tr>
                     <td align="center" height="45px">
-                        <form action="Admin.php?submit=9&erase=1" method="post">
+                        <form id="refundForm">
                             <input type="submit" name="submit" value="Возврат билетов">
                         </form>
                     </td>
@@ -157,5 +139,32 @@ if (!isset($_GET['submit'])) {
             </table>
         </div>
     </div>
+
+    <script>
+        // JavaScript для обработки возврата билетов
+        document.getElementById('refundForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Предотвращаем стандартное поведение формы
+
+            if (confirm('Вы уверены, что хотите удалить все заказы?')) {
+                try {
+                    const response = await fetch('orders/delete.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'refund' })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Все заказы успешно удалены!');
+                    } else {
+                        alert('Ошибка при удалении заказов: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при выполнении запроса.');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

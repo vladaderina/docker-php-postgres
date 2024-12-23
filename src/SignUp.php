@@ -1,3 +1,58 @@
+<?php
+// Подключение к базе данных
+ # Connect to PostgreSQL database
+ $host = getenv('DB_HOST');
+ $dbname = getenv('DB_NAME');
+ $user_db = getenv('DB_USER');
+ $password_db = getenv('DB_PASSWORD');
+ 
+ $conn = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db");
+ if (!$conn) {
+     die('Database connection failed: ' . pg_last_error());
+ }
+if (!$conn) {
+    die("Ошибка подключения к базе данных.");
+}
+
+// Обработка формы регистрации
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $last_name = $_POST['last_name'];
+    $first_name = $_POST['first_name'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $credit_card_num = $_POST['credit_card_num'];
+    $credit_card_expiry_date = $_POST['cce_m'] . '/' . $_POST['cce_y'];
+
+    // SQL-запрос для вставки данных
+    $query = "INSERT INTO customers (last_name, first_name, email, password, credit_card_num, credit_card_expiry_date) 
+              VALUES ($1, $2, $3, $4, $5, $6)";
+
+    // Параметры для запроса
+    $params = array($last_name, $first_name, $email, $password, $credit_card_num, $credit_card_expiry_date);
+
+    // Выполнение запроса
+    $result = pg_query_params($conn, $query, $params);
+
+    if (!$result) {
+        // Получение текста ошибки
+        $error_message = pg_last_error($conn);
+
+        // Проверка, является ли ошибка дублированием ключа
+        if (strpos($error_message, 'duplicate key value violates unique constraint "unique_customer_email"') !== false) {
+            $error_message = "Пользователь с таким email уже существует.";
+        } else {
+            $error_message = "Ошибка при выполнении запроса: " . $error_message;
+        }
+
+        // Отображение ошибки на странице
+        echo "<div id='emsg'>$error_message</div>";
+    } else {
+        // Успешная регистрация
+        echo "<div id='emsg'>Регистрация прошла успешно!</div>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -96,7 +151,6 @@
         input[type="first_name"],
         input[type="last_name"],
         select {
-            background-color: #007BFF; /* Синий цвет кнопки */
             width: 100%;
             padding: 12px;
             margin: 10px 0;
@@ -104,11 +158,6 @@
             border-radius: 5px;
             font-size: 16px;
             color: #333;
-        }
-
-        select:focus {
-            background-color: #0056b3; /* Темно-синий цвет при фокусе */
-            outline: none; /* Убираем стандартный outline */
         }
 
         #textbox {
@@ -172,85 +221,35 @@
         <form action="Register.php" method="post">
             <h1>РЕГИСТРАЦИЯ</h1>
 
-            <?php
-            if (isset($_GET['ve'])) {
-                echo "<div id='emsg'>";
-
-                # Комментарий: Отображает ошибки, возникшие при регистрации, если какие-либо поля были заполнены неправильно.
-                if ($hea != "X") {
-                    echo "<li>" . $hea . "</li></br>";
-                }
-                if ($heb != "X") {
-                    echo "<li>" . $heb . "</li></br>";
-                }
-                if ($hec != "X") {
-                    echo "<li>" . $hec . "</li></br>";
-                }
-                if ($hed != "X") {
-                    echo "<li>" . $hed . "</li></br>";
-                }
-                if ($hee != "X") {
-                    echo "<li>" . $hee . "</li></br>";
-                }
-                if ($hefa != "X") {
-                    echo "<li>" . $hefa . "</li></br>";
-                }
-                if ($hefb != "X") {
-                    echo "<li>" . $hefb . "</li></br>";
-                }
-                echo "</div><br><br>";
-            }
-            ?>
-
             <table width="100%" border="0">
                 <tr>
                     <td height="40" valign="middle" align="left"><label for="first_name"><b>Имя:</b></label></td>
-                    <td align="right"><input id="textbox" type="text" name="first_name" <?php if (isset($_GET['ve'])) { echo "value='" . $gfn . "'"; } ?> /></td>
+                    <td align="right"><input id="textbox" type="text" name="first_name" /></td>
                 </tr>
                 <tr>
                     <td height="40" valign="middle" align="left"><label for="last_name"><b>Фамилия:</b></label></td>
-                    <td align="right"><input id="textbox" type="text" name="last_name" <?php if (isset($_GET['ve'])) { echo "value='" . $gln . "'"; } ?> /></td>
+                    <td align="right"><input id="textbox" type="text" name="last_name" /></td>
                 </tr>
                 <tr>
                     <td height="40" valign="middle" align="left"><label for="email"><b>Почта:</b></label></td>
-                    <td align="right"><input id="textbox" type="email" name="email" <?php if (isset($_GET['ve'])) { echo "value='" . $gea . "'"; } ?> /></td>
+                    <td align="right"><input id="textbox" type="email" name="email" /></td>
                 </tr>
                 <tr>
                     <td height="40" valign="middle" align="left"><label for="password"><b>Пароль:</b></label></td>
-                    <td align="right"><input id="textbox" type="password" name="password" <?php if (isset($_GET['ve'])) { echo "value='" . $gap . "'"; } ?> /></td>
+                    <td align="right"><input id="textbox" type="password" name="password" /></td>
                 </tr>
                 <tr>
                     <td height="40" valign="middle" align="left"><label for="credit_card_num"><b>Номер банковской карты:</b></label></td>
-                    <td align="right"><input id="textbox" type="text" name="credit_card_num" maxlength="16" <?php if (isset($_GET['ve'])) { echo "value='" . $gcn . "'"; } ?> /></td>
+                    <td align="right"><input id="textbox" type="text" name="credit_card_num" maxlength="16" /></td>
                 </tr>
                 <tr>
                     <td height="40" valign="middle" align="left"><label for="cce_m"><b>Срок действия карты:</b></label></td>
                     <td align="right">
-                        <?php
-                        # Комментарий: Автоматически создает выпадающие меню для месяцев и лет, вместо ручного ввода множества лет.
-                        echo "<label><b>Месяц:</b></label> <select name='cce_m' id='input'>";
-                        if (isset($_GET['ve'])) {
-                            if ($gccem != "X") {
-                                echo "<option value='" . $gccem . "'>" . $gccem . "</option>";
-                            }
-                        }
-                        echo "<option value='X'>ВЫБЕРИТЕ</option>";
-                        for ($q = 1; $q <= 12; $q++) {
-                            echo "<option value='" . $q . "'>" . $q . "</option>";
-                        }
-                        echo "</select>&nbsp;";
-                        echo "<label><b>Год:</b></label> <select name='cce_y' id='input'>";
-                        if (isset($_GET['ve'])) {
-                            if ($gccey != "X") {
-                                echo "<option value='" . $gccey . "'>" . $gccey . "</option>";
-                            }
-                        }
-                        echo "<option value='X'>ВЫБЕРИТЕ</option>";
-                        for ($s = 2014; $s <= 2030; $s++) {
-                            echo "<option value='" . $s . "'>" . $s . "</option>";
-                        }
-                        echo "</select>";
-                        ?>
+                        <label><b>Месяц:</b></label>
+                        <select name="cce_m" id="cce_m"></select>
+                        &nbsp;
+                        <label><b>Год:</b></label>
+                        <select name="cce_y" id="cce_y"></select>
                     </td>
                 </tr>
                 <tr>
@@ -266,6 +265,53 @@
             </div>
         </form>
     </div>
+
+    <script>
+        // Функция для создания выпадающего списка месяцев
+        function createMonthDropdown() {
+            const monthSelect = document.getElementById('cce_m');
+            monthSelect.innerHTML = ''; // Очищаем текущие опции
+
+            // Добавляем опцию "ВЫБЕРИТЕ"
+            const defaultOption = document.createElement('option');
+            defaultOption.value = 'X';
+            defaultOption.textContent = 'ВЫБЕРИТЕ';
+            monthSelect.appendChild(defaultOption);
+
+            // Добавляем месяцы
+            for (let month = 1; month <= 12; month++) {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            }
+        }
+
+        // Функция для создания выпадающего списка лет
+        function createYearDropdown() {
+            const yearSelect = document.getElementById('cce_y');
+            yearSelect.innerHTML = ''; // Очищаем текущие опции
+
+            // Добавляем опцию "ВЫБЕРИТЕ"
+            const defaultOption = document.createElement('option');
+            defaultOption.value = 'X';
+            defaultOption.textContent = 'ВЫБЕРИТЕ';
+            yearSelect.appendChild(defaultOption);
+
+            // Добавляем годы (например, с 2014 по 2030)
+            const currentYear = new Date().getFullYear();
+            for (let year = 2014; year <= 2030; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+        }
+
+        // Вызываем функции для создания выпадающих списков
+        createMonthDropdown();
+        createYearDropdown();
+    </script>
 </body>
 
 </html>

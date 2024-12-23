@@ -1,70 +1,14 @@
 <?php
-#===============================================#
-# File: Process.php
-# Function: Retrieves the order details from the confirmation page and updates the database with the order information such as which seats were purchased, the total cost and date and time of the purchase.
-#===============================================#
-
 if (isset($_POST['process'])) {
-
-    # Comment: Gets the date and time, order details, and the customer's ID
-    date_default_timezone_set('America/New_York');
-    $date = date("Y/m/d");
-    $time = date("H:i:s");
-    $sub_total = $_POST['sub_total'];
-    $hst = $_POST['hst'];
-    $total_cost = $_POST['total_cost'];
-    $customer_id = $_POST['customer_id'];
-    
-    $host = getenv('DB_HOST');
-    $dbname = getenv('DB_NAME');
-    $user_db = getenv('DB_USER');
-    $password_db = getenv('DB_PASSWORD');
-
-    # Comment: Publishes the order details into the orders section of the database (Date, time, subtotal, total, tax, and the customer's ID number who made the purchase).
-    $db = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") or die('Not connected: ' . pg_last_error());
-    
-    $SQL = "INSERT INTO orders (date, time, sub_total, hst, total_cost, customer_id) 
-            VALUES ('$date', '$time', $sub_total, $hst, $total_cost, $customer_id) RETURNING id";
-    $result = pg_query($db, $SQL);
-    if (!$result) {
-        die('Error: ' . pg_last_error());
-    }
-    
-    $order_row = pg_fetch_assoc($result);
-    $order_id = $order_row['id'];
-    pg_close($db);
-
-    # Comment: Connects to the seats section of the database and changes the property called "Order ID" for each seat purchased.
-    $dbx = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") or die('Not connected: ' . pg_last_error());
-    
-    $SQLx = "SELECT seat FROM seats";
-    $resultx = pg_query($dbx, $SQLx);
-    if (!$resultx) {
-        die('Error: ' . pg_last_error());
-    }
-
-    while ($rowx = pg_fetch_assoc($resultx)) {
-        if (isset($_GET[$rowx['seat']])) {
-            $dba = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") or die('Not connected: ' . pg_last_error());
-            
-            $SQLa = "UPDATE seats SET order_id = $order_id WHERE seat = '" . $rowx['seat'] . "'";
-            $resulta = pg_query($dba, $SQLa);
-            if (!$resulta) {
-                die('Error: ' . pg_last_error());
-            }
-            pg_close($dba);
-        }
-    }
-
-    # Comment: Prompts the user if they wish to log out or buy more tickets.
-    echo "
+    // Вызов create.php через AJAX
+    ?>
     <!DOCTYPE html>
-    <html lang='ru'>
+    <html lang="ru">
     <head>
-        <meta charset='UTF-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Заказ обработан</title>
-        <link rel='stylesheet' type='text/css' href='Stylesheet.css'>
+        <link rel="stylesheet" type="text/css" href="Stylesheet.css">
         <style>
             /* CSS Styling */
             * {
@@ -149,24 +93,52 @@ if (isset($_POST['process'])) {
         </style>
     </head>
     <body>
-        <div id='confirm'>
-            <div id='confirm_panel'>
+        <div id="confirm">
+            <div id="confirm_panel">
                 <h2>Спасибо за ваш заказ</h2>
-                <p align='center'>Мы будем рады видеть вас на концерте!</p>
-                <div align='center'>
-                    <a href='Shop.php?submit=1&id=" . $customer_id . "'>КУПИТЬ ЕЩЁ</a>
-                    <a href='Main.php'>ВЫЙТИ</a>
+                <p align="center">Мы будем рады видеть вас на концерте!</p>
+                <div align="center">
+                    <a href="Shop.php?submit=1&id=<?= $_POST['customer_id'] ?>">КУПИТЬ ЕЩЁ</a>
+                    <a href="Main.php">ВЫЙТИ</a>
                 </div>
             </div>
         </div>
+
+        <script>
+            // Отправка данных на сервер через AJAX
+            document.addEventListener('DOMContentLoaded', async () => {
+                const response = await fetch('orders/create.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        process: true,
+                        sub_total: <?= $_POST['sub_total'] ?>,
+                        hst: <?= $_POST['hst'] ?>,
+                        total_cost: <?= $_POST['total_cost'] ?>,
+                        customer_id: <?= $_POST['customer_id'] ?>,
+                        <?php
+                        foreach ($_POST as $key => $value) {
+                            if (strpos($key, 'seat') === 0) {
+                                echo "$key: true,\n";
+                            }
+                        }
+                        ?>
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Заказ успешно создан:', result);
+                } else {
+                    alert('Ошибка при создании заказа: ' + result.message);
+                }
+            });
+        </script>
     </body>
     </html>
-    ";
-    exit();
-
+    <?php
 } else {
     header("Location: Main.php");
     exit();
 }
-
 ?>

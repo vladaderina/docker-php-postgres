@@ -95,8 +95,7 @@ $oid = $_GET['order_id'];
             $user_db = getenv('DB_USER');
             $password_db = getenv('DB_PASSWORD');
         
-            $db = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db");
-                or die('Не удалось подключиться: ' . pg_last_error());
+            $db = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") or die('Не удалось подключиться: ' . pg_last_error());
 
             # SQL-запрос для получения данных о заказе и местах
             $query = "
@@ -126,21 +125,24 @@ $oid = $_GET['order_id'];
             } else {
                 $subtotal = $hst = $total = null;
                 $customerName = $creditCard = $expiryDate = $date = $time = "";
-
+        
                 echo "<tr><th>Место</th><th>Цена</th></tr>";
-
+            
                 while ($row = pg_fetch_assoc($result)) {
-                    echo "<tr><td>" . htmlspecialchars($row['seat']) . "</td><td>₽" . number_format($row['price'], 2) . "</td></tr>";
-
+                    $seat = $row['seat'] ?? '';
+                    $price = $row['price'] ?? 0.0;
+            
+                    echo "<tr><td>" . htmlspecialchars($seat) . "</td><td>₽" . number_format($price, 2) . "</td></tr>";
+            
                     # Сохраняем данные заказа
-                    $subtotal = $row['sub_total'];
-                    $hst = $row['hst'];
-                    $total = $row['total_cost'];
-                    $customerName = htmlspecialchars($row['last_name'] . ', ' . $row['first_name']);
+                    $subtotal = $row['sub_total'] ?? 0.0;
+                    $hst = $row['hst'] ?? 0.0;
+                    $total = $row['total_cost'] ?? 0.0;
                     $creditCard = htmlspecialchars($row['credit_card_num']);
                     $expiryDate = htmlspecialchars($row['credit_card_expiry_date']);
                     $date = htmlspecialchars($row['date']);
                     $time = htmlspecialchars($row['time']);
+                    $customerName = $row['first_name'] . " " . $row['last_name'];
                 }
 
                 # Отображение общей информации о заказе

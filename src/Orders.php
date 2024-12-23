@@ -99,13 +99,19 @@ if ($cid !== "all" && (!ctype_digit($cid) || $cid === null)) {
         .back-link:hover {
             text-decoration: underline;
         }
+
+        /* Стиль для активной строки */
+        .active-row {
+            background-color: #b3d7ff !important; /* Цвет активной строки */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h2>Список заказов</h2>
     <p id="info">Нажмите на ID заказа, чтобы увидеть подробности, или на имя клиента, чтобы увидеть все его заказы.</p>
 
-    <table>
+    <table id="orders-table">
         <tr>
             <th>ID заказа</th>
             <th>Дата и время</th>
@@ -113,61 +119,78 @@ if ($cid !== "all" && (!ctype_digit($cid) || $cid === null)) {
             <th>Подытог</th>
             <th>НДС</th>
             <th>Общая сумма</th>
+            <th>Статус</th>
         </tr>
-        <?php
-        
-        $host = getenv('DB_HOST');
-        $dbname = getenv('DB_NAME');
-        $user_db = getenv('DB_USER');
-        $password_db = getenv('DB_PASSWORD');
-    
-        $db = pg_connect("host=$host dbname=$dbname user=$user_db password=$password_db") 
-              or die('Ошибка подключения: ' . pg_last_error());
-
-        if ($cid === "all") {
-            $SQL = "SELECT *, orders.id AS order_number 
-                    FROM orders 
-                    INNER JOIN customers ON orders.customer_id = customers.id
-                    ORDER BY orders.id ASC";
-            $result = pg_query($db, $SQL);
-        } else {
-            $SQL = "SELECT *, orders.id AS order_number 
-                    FROM orders 
-                    INNER JOIN customers ON orders.customer_id = customers.id 
-                    WHERE orders.customer_id = $1 
-                    ORDER BY orders.id ASC";
-            $result = pg_query_params($db, $SQL, [$cid]);
-        }
-
-        if (!$result) {
-            die('Ошибка запроса: ' . pg_last_error());
-        }
-
-        $num_results = pg_num_rows($result);
-        pg_close($db);
-
-        if ($num_results == 0) {
-            echo "<tr><td colspan='6' align='center'><strong>Заказов нет</strong></td></tr>";
-        } else {
-            while ($row = pg_fetch_assoc($result)) {
-                $tsubtotal = number_format((float)$row['sub_total'], 2, '.', '');
-                $thst = number_format((float)$row['hst'], 2, '.', '');
-                $ttotal = number_format((float)$row['total_cost'], 2, '.', '');
-
-                echo "
-                <tr>
-                    <td><a href='OrderDetails.php?submit=9&order_id=" . $row['order_number'] . "'>" . $row['order_number'] . "</a></td>
-                    <td>" . $row['date'] . " в " . $row['time'] . "</td>
-                    <td><a href='Orders.php?submit=9&customer_id=" . $row['customer_id'] . "'>" . $row['last_name'] . ", " . $row['first_name'] . "</a></td>
-                    <td>₽" . $tsubtotal . "</td>
-                    <td>₽" . $thst . "</td>
-                    <td>₽" . $ttotal . "</td>
-                </tr>";
-            }
-        }
-        ?>
     </table>
 
     <a href="<?= $cid === 'all' ? 'Admin.php?submit=9' : 'Customers.php?submit=9'; ?>" class="back-link">Вернуться назад</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const cid = '<?= $_GET['customer_id'] ?? 'all'; ?>';
+            const response = await fetch(`orders/read.php?customer_id=all`);
+            const data = await response.json();
+
+            if (data.success) {
+                const tableBody = document.querySelector('#orders-table tbody');
+
+                data.data.forEach(order => {
+                    const row = `
+                        <tr data-order-id="${order.order_number}">
+                            <td><a href='OrderDetails.php?submit=9&order_id=${order.order_number}'>${order.order_number}</a></td>
+                            <td>${order.date} в ${order.time}</td>
+                            <td><a href='Orders.php?submit=9&customer_id=${order.customer_id}'>${order.customer_name}</a></td>
+                            <td>₽${order.sub_total}</td>
+                            <td>₽${order.hst}</td>
+                            <td>₽${order.total_cost}</td>
+                            <td>
+                                <select class="status-select" data-order-id="${order.order_number}">
+                                    <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>В ожидании</option>
+                                    <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Обработан</option>
+                                    <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Продан</option>
+                                    <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Доставлен</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+
+                // Обработчик изменения статуса
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', async (e) => {
+                        const orderId = e.target.dataset.orderId;
+                        const status = e.target.value;
+
+                        const response = await fetch('orders/update.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId, status })
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            alert('Статус успешно обновлен!');
+                        } else {
+                            alert('Ошибка при обновлении статуса: ' + result.message);
+                        }
+                    });
+                });
+
+                // Обработчик выбора активной строки
+                document.querySelectorAll('#orders-table tr[data-order-id]').forEach(row => {
+                    row.addEventListener('click', () => {
+                        // Удаляем класс active-row у всех строк
+                        document.querySelectorAll('#orders-table tr[data-order-id]').forEach(r => r.classList.remove('active-row'));
+
+                        // Добавляем класс active-row к выбранной строке
+                        row.classList.add('active-row');
+                    });
+                });
+            } else {
+                alert('Ошибка при загрузке данных: ' + data.message);
+            }
+        });
+    </script>
 </body>
 </html>
